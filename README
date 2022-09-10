@@ -1,0 +1,80 @@
+COPYRIGHT Dinuta Eduard-Stefan 311CA
+
+  Programul este o aplicatie de modificare a imaginilor in format PPM/PGM
+folosind limbajul C. Pentru fiecare operatie posibila sunt implementate
+una sau mai multe functii care folosesc la realizarea acesteia. 
+Pentru implementare sunt folosite 3 fisiere: my_octave.c, unde sunt 
+citite comenzile si apelate functiile, my_functions.h, un header 
+ce contine definitiile functiilor si my_functions.c ce contine implementarile
+functiilor necesare comenzilor. Pe parcusul programului fiecare tablou este
+alocat dinamic, iar dupa terminarea utilizarii acestuia memoria este
+eliberata, fiind luate in calcul si posibilele erori de alocare, caz
+in care memoria pana in acel moment este eliberata si executia programului
+se opreste, afisand un mesaj de eroare. De asemenea la fiecare operatie, daca
+nu am incarcat o imagine in program este afisat mesajul "No image loaded".
+  La inceput sunt declarate nuceleele de imagine, stringurile 
+pentru citirea comenzilor, si matricea in care va fi stocata imaginea.
+Matricea va contine tipul imaginii, dimensiunile in variabilele lin si col,
+valoarea maxima a pixelilor, si o matrice de tipul pixel_t. Structura pixel_t
+contine cate un camp pentru fiecare dintre cele 3 culori ale unei imagini. 
+De asemenea, selectia din imagine pe care sunt realizate operatiile va fi
+reprezentata de variabilele l1, c1, l2, c2, care sunt colturile din stanga-sus,
+respectiv dreapta-jos. Apoi este citia fiecare linie si sunt identificate 
+operatiile. Operatiile posibile sunt:
+
+• LOAD <fisier>: 
+  Comanda LOAD <fisier> presupune incarcarea unei imagini in memorie. 
+Pentru a aplica modificari vom lucra cu matricea pixelilor imaginii. 
+Pentru inceput stergem din memorie o matrice deja incarcata si apoi extragem 
+tipul, dimensiunile, valoarea maxima si matricea din imagine, folosing functia 
+get_matrix(). In final actualizam variabilele l1, c1, l2, c2 cu dimensiunile 
+matricii, deoarece la incarcare toata imaginea este selectata.
+
+• SELECT ALL:
+  Comanda SELECT ALL selecteaza toata imaginea. Pentru aceasta comanda doar 
+sunt actualizate variabilele l1, c1, l2, c2 cu dimensiunile matricii.
+
+• SELECT <x1> <y1> <x2> <y2:
+  Comanda SELECT <x1> <y1> <x2> <y2 selecteaza o submatrice a imaginii. 
+Mai intai este impusa conditia x1 < x2 si y1 < y2, valorile fiind
+interschimbate daca nu este respectata. Apoi se verifica daca coordonatele
+sunt valid si daca sunt se actualizeaza l1, c1, l2, c2.
+
+• ROTATE <unghi>:
+  Comanda ROTATE <unghi> roteste selectia curenta cu <unghi> grade, fiind
+acceptate ca unghiuri doar multiplii de 90 din intervalul [-360, 360]. Rotatia
+se poate realiza doar daca toata imaginea este selectata, sau daca selectia 
+este patrata. Pentru a roti imaginea cu 90 de grade vom transpune matrica si 
+apoi vom inversa fiecare rand, iar pentru -90 de grade operatia inversa: mai 
+intai inversam randurile apoi transpunem. Pentru o rotatie cu un unghi multiplu
+de 90 vom roti matricea cu 90 de grade inmultit cu unghi / 90.
+
+• CROP:
+  Comanda decupeaza din imagine selectia curenta cu ajutorul functiei crop().
+Matricea este copiata in alta matrice auxiliara, cu noile dimensiuni, memoria
+pentru matricea veche este eliberata si se incarca in memorie matricea noua,
+fiind actualizate si noile dimensiuni
+
+• APPLY <parametru>:
+  Comanda APPLY aplica un filtru selectie curente, dat de <parametru>. Filtrele
+ce pot fi aplicate sunt: EDGE, SHARPEN, BLUR si GAUSSIAN_BLUR. Dupa ce este 
+identificat parametrul, se apeleaza functia apply(), cu nucleul corespunzator
+si o constanta cu care acesta trebuie impartit. Pentru a realiza operatiile
+folosim doi vectori de directie, care ne ajuta atat la accesarea vecinilor
+unui pixel, cat si a elementelor din nucleu. Noile valori sunt calculate
+intr-o matrice auxiliara, avand grija ca acestea sa ramana in intervalul
+[0, 255] cu functia clamp. Calculele sunt realizate folosind numere reale,
+care sunt rotunjite la intregi la copierea lor in matrice.
+
+• SAVE <nume_fisier> [ascii]:
+  Comanda salveaza imaginea incarcata in acel moment in program
+intr-un fisier cu numele <nume_fisier>. Daca este introdus si 
+parametrul ascii, atunci fisierul va fi de tip text, daca nu
+imaginea va fi salvata intr-un fisier binar. In ambele cazuri
+sunt scrise pe rand in fisier tipul imaginii, dimensiunile, 
+valoarea maxima, si matricea de pixeli.
+  
+• EXIT:
+  Comanda EXIT reprezinta sfarsitul programului. Memoria folosita
+pentru incarcarea imaginii este eliberata, apoi si restul resurselor
+pentru citirea comenzilor, si programul isi incheie executia.
